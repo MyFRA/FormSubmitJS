@@ -1,4 +1,4 @@
-class FormSubmit {
+class FormSubmitJS {
     options;
     obj_key_and_name_source_element;
     arr_form_data = [];
@@ -9,6 +9,7 @@ class FormSubmit {
         this.obj_key_and_name_source_element = obj_key_and_name_source_element;
 
         this.generateFormData();
+
         this.appendFormData();
     }
 
@@ -22,18 +23,31 @@ class FormSubmit {
 
                     let arr_values = [];
                     inputElements.forEach((inputElement) => {
-                        if (!inputElement) return;
-
-                        arr_values.push(key, this.getValueFromElement(inputElement));
+                        if (!inputElement) {
+                            return
+                        } else if (!['SELECT', 'INPUT'].includes(inputElement.tagName)) {
+                            return
+                        } else {
+                            arr_values.push(this.getValueFromElement(inputElement));
+                        }
                     });
+
+                    if( arr_values.length == 1 ) {
+                        arr_values = arr_values[0];
+                    }
 
                     this.addArrFormDataValue(key, arr_values);
 
                 } else {
                     let inputElement = inputElements[0];
-                    if (!inputElement) return;
 
-                    this.addArrFormDataValue(key, this.getValueFromElement(inputElement));
+                    if (!inputElement) {
+                        return
+                    } else if (!['SELECT', 'INPUT'].includes(inputElement.tagName)) {
+                        return
+                    } else {
+                        this.addArrFormDataValue(key, this.getValueFromElement(inputElement));
+                    }
                 }
             }
         }
@@ -42,13 +56,15 @@ class FormSubmit {
     }
 
     addArrFormDataValue(key, value) {
-        this.arr_form_data.push(key, value);
+        let obj = {};
+        obj[key] = value;
+        this.arr_form_data.push(obj);
     }
 
     getValueFromElement(inputElement) {
         if (inputElement.tagName == 'INPUT' && inputElement.type == 'file') {
             return inputElement.files[0] ? inputElement.files[0] : null;
-        } else {
+        } else if(['SELECT', 'INPUT'].includes(inputElement.tagName)) {
             return inputElement.value;
         }
     }
