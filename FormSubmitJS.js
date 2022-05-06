@@ -38,7 +38,7 @@ class FormSubmitJS {
                             }
                         }
 
-                        this.addArrFormDataValue(key, values);
+                        this.addArrFormDataValue(key, JSON.stringify(values));
                     }
                 } else {
                     let inputElements = document.getElementsByName(name_element);
@@ -103,14 +103,19 @@ class FormSubmitJS {
     }
 
     getFormData() {
-        return this.arr_form_data;
+        let form_data_obj = {};
+        this.arr_form_data.forEach((form_data) => {
+            form_data_obj[Object.keys(form_data)[0]] = form_data[Object.keys(form_data)[0]];
+        });
+
+        return form_data_obj;
     }
 
     submit(callback) {
         fetch(this.options.url, {
             method: this.options.method,
             body: this.formData,
-            mode: 'cors'
+            mode: 'cors',
         }).then((res) => {
             if (!res.ok) {
                 res.text().then((json_errs) => {
