@@ -18,7 +18,11 @@ class FormSubmitJS {
             if (Object.hasOwnProperty.call(this.obj_key_and_name_source_element, key)) {
                 let name_element = this.obj_key_and_name_source_element[key];
 
-                if (typeof name_element == 'object') {
+                if( typeof name_element == 'function' ) {
+                    let value = name_element();
+
+                    this.addArrFormDataValue(key, value);
+                } else if (typeof name_element == 'object') {
                     let { type, value } = name_element;
 
                     if (type == 'array') {
@@ -131,5 +135,35 @@ class FormSubmitJS {
                 return callback(null, response);
             }
         });
+    }
+
+    bootstrapHandleError(errs, err_keyElement_and_message) {
+        
+        for (const idElement in err_keyElement_and_message) {
+            if (Object.hasOwnProperty.call(err_keyElement_and_message, idElement)) {
+                const inputElement  = document.getElementById(idElement);
+                const keyErrorMessage = err_keyElement_and_message[idElement];
+
+                if( typeof keyErrorMessage == 'object' ) {
+                    let newKeyErrorMessage = keyErrorMessage.key;
+                    let errorFunction   = keyErrorMessage.error;
+
+                    if( errs[newKeyErrorMessage] ) {
+                        errorFunction(newKeyErrorMessage, Array.isArray(errs[newKeyErrorMessage]) ? errs[newKeyErrorMessage][0] : errs[newKeyErrorMessage]);
+                    }
+                } else {
+                    if( errs[keyErrorMessage] ) {
+                        if( ['INPUT', 'TEXTAREA'].includes(inputElement.tagName) ) {
+                            !inputElement.classList.contains('is-invalid') ? inputElement.classList.add('is-invalid') : '';
+                            
+                            if( !inputElement.nextElementSibling ) {
+                                inputElement.parentElement.insertAdjacentHTML('beforeend', 
+                                    `<div class="invalid-feedback">${ Array.isArray(errs[keyErrorMessage]) ? errs[keyErrorMessage][0] : errs[keyErrorMessage] }</div>`);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
