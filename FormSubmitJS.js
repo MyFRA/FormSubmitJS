@@ -16,78 +16,80 @@ class FormSubmitJS {
     generateFormData() {
         for (const key in this.obj_key_and_name_source_element) {
             if (Object.hasOwnProperty.call(this.obj_key_and_name_source_element, key)) {
-                let name_element = this.obj_key_and_name_source_element[key];
-
-                if (typeof name_element == 'function') {
-                    let value = name_element();
-
-                    this.addArrFormDataValue(key, value);
-                } else if (typeof name_element == 'object') {
-                    let { type, value } = name_element;
-
-                    if (type == 'array') {
-                        let firstValue = value[Object.keys(value)[0]];
-                        let amountElements = document.getElementsByName(firstValue).length;
-                        let values = [];
-
-                        for (let i = 0; i < amountElements; i++) {
-                            let objItem = {};
-                            for (const keyValue of Object.keys(value)) {
-                                let inputElement = document.getElementsByName(value[keyValue])[i];
-                                objItem[keyValue] = this.getValueFromElement(inputElement);
-
-                                if (keyValue == Object.keys(value)[Object.keys(value).length - 1]) {
-                                    values.push(objItem)
-                                }
-                            }
-                        }
-
-                        this.addArrFormDataValue(key, JSON.stringify(values));
-                    }
-                } else {
-                    let inputElements = document.getElementsByName(name_element);
-
-                    if (inputElements.length > 1) {
-
-                        let arr_values = [];
-                        inputElements.forEach((inputElement) => {
-                            if (!inputElement) {
-                                return
-                            } else if (!['SELECT', 'INPUT'].includes(inputElement.tagName)) {
-                                return
-                            } else {
-                                arr_values.push(this.getValueFromElement(inputElement));
-                            }
-                        });
-
-                        if (arr_values.length == 1) {
-                            arr_values = arr_values[0];
-                        }
-
-                        this.addArrFormDataValue(key, arr_values);
-
-                    } else {
-                        let inputElement = inputElements[0];
-
-                        if (!inputElement) {
-                            return
-                        } else if (!['SELECT', 'INPUT', 'TEXTAREA'].includes(inputElement.tagName)) {
-                            return
-                        } else {
-                            if (inputElement.tagName == 'INPUT' && inputElement.type == 'file') {
-                                if (!inputElement.files[0]) {
-                                    return;
-                                }
-                            }
-
-                            this.addArrFormDataValue(key, this.getValueFromElement(inputElement));
-                        }
-                    }
-                }
+                this.doAppendToFormData(key);
             }
         }
 
         return this;
+    }
+
+    doAppendToFormData(key) {
+        let name_element = this.obj_key_and_name_source_element[key];
+        if (typeof name_element == 'function') {
+            let value = name_element();
+
+            this.addArrFormDataValue(key, value);
+        } else if (typeof name_element == 'object') {
+            let { type, value } = name_element;
+
+            if (type == 'array') {
+                let firstValue = value[Object.keys(value)[0]];
+                let amountElements = document.getElementsByName(firstValue).length;
+                let values = [];
+
+                for (let i = 0; i < amountElements; i++) {
+                    let objItem = {};
+                    for (const keyValue of Object.keys(value)) {
+                        let inputElement = document.getElementsByName(value[keyValue])[i];
+                        objItem[keyValue] = this.getValueFromElement(inputElement);
+
+                        if (keyValue == Object.keys(value)[Object.keys(value).length - 1]) {
+                            values.push(objItem)
+                        }
+                    }
+                }
+
+                this.addArrFormDataValue(key, JSON.stringify(values));
+            }
+        } else {
+            let inputElements = document.getElementsByName(name_element);
+
+            if (inputElements.length > 1) {
+
+                let arr_values = [];
+                inputElements.forEach((inputElement) => {
+                    if (!inputElement) {
+                        return
+                    } else if (!['SELECT', 'INPUT'].includes(inputElement.tagName)) {
+                        return
+                    } else {
+                        arr_values.push(this.getValueFromElement(inputElement));
+                    }
+                });
+
+                if (arr_values.length == 1) {
+                    arr_values = arr_values[0];
+                }
+
+                this.addArrFormDataValue(key, arr_values);
+
+            } else {
+                let inputElement = inputElements[0];
+
+                if (!inputElement) {
+                    return
+                } else if (!['SELECT', 'INPUT', 'TEXTAREA'].includes(inputElement.tagName)) {
+                    return
+                } else {
+                    if (inputElement.tagName == 'INPUT' && inputElement.type == 'file') {
+                        if (!inputElement.files[0]) {
+                            return;
+                        }
+                    }
+                    this.addArrFormDataValue(key, this.getValueFromElement(inputElement));
+                }
+            }
+        }
     }
 
     addArrFormDataValue(key, value) {
