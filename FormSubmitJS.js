@@ -18,7 +18,7 @@ class FormSubmitJS {
             if (Object.hasOwnProperty.call(this.obj_key_and_name_source_element, key)) {
                 let name_element = this.obj_key_and_name_source_element[key];
 
-                if( typeof name_element == 'function' ) {
+                if (typeof name_element == 'function') {
                     let value = name_element();
 
                     this.addArrFormDataValue(key, value);
@@ -35,8 +35,8 @@ class FormSubmitJS {
                             for (const keyValue of Object.keys(value)) {
                                 let inputElement = document.getElementsByName(value[keyValue])[i];
                                 objItem[keyValue] = this.getValueFromElement(inputElement);
-                                
-                                if( keyValue == Object.keys(value)[Object.keys(value).length - 1] ) {
+
+                                if (keyValue == Object.keys(value)[Object.keys(value).length - 1]) {
                                     values.push(objItem)
                                 }
                             }
@@ -71,9 +71,15 @@ class FormSubmitJS {
 
                         if (!inputElement) {
                             return
-                        } else if (!['SELECT', 'INPUT'].includes(inputElement.tagName)) {
+                        } else if (!['SELECT', 'INPUT', 'TEXTAREA'].includes(inputElement.tagName)) {
                             return
                         } else {
+                            if (inputElement.tagName == 'INPUT' && inputElement.type == 'file') {
+                                if (!inputElement.files[0]) {
+                                    return;
+                                }
+                            }
+
                             this.addArrFormDataValue(key, this.getValueFromElement(inputElement));
                         }
                     }
@@ -92,8 +98,8 @@ class FormSubmitJS {
 
     getValueFromElement(inputElement) {
         if (inputElement.tagName == 'INPUT' && inputElement.type == 'file') {
-            return inputElement.files[0] ? inputElement.files[0] : null;
-        } else if (['SELECT', 'INPUT'].includes(inputElement.tagName)) {
+            return inputElement.files[0] ? inputElement.files[0] : '';
+        } else if (['SELECT', 'INPUT', 'TEXTAREA'].includes(inputElement.tagName)) {
             return inputElement.value;
         }
     }
@@ -138,27 +144,27 @@ class FormSubmitJS {
     }
 
     bootstrapHandleError(errs, err_keyElement_and_message) {
-        
+
         for (const idElement in err_keyElement_and_message) {
             if (Object.hasOwnProperty.call(err_keyElement_and_message, idElement)) {
-                const inputElement  = document.getElementById(idElement);
+                const inputElement = document.getElementById(idElement);
                 const keyErrorMessage = err_keyElement_and_message[idElement];
 
-                if( typeof keyErrorMessage == 'object' ) {
+                if (typeof keyErrorMessage == 'object') {
                     let newKeyErrorMessage = keyErrorMessage.key;
-                    let errorFunction   = keyErrorMessage.error;
+                    let errorFunction = keyErrorMessage.error;
 
-                    if( errs[newKeyErrorMessage] ) {
+                    if (errs[newKeyErrorMessage]) {
                         errorFunction(newKeyErrorMessage, Array.isArray(errs[newKeyErrorMessage]) ? errs[newKeyErrorMessage][0] : errs[newKeyErrorMessage]);
                     }
                 } else {
-                    if( errs[keyErrorMessage] ) {
-                        if( ['INPUT', 'TEXTAREA'].includes(inputElement.tagName) ) {
+                    if (errs[keyErrorMessage]) {
+                        if (['INPUT', 'TEXTAREA'].includes(inputElement.tagName)) {
                             !inputElement.classList.contains('is-invalid') ? inputElement.classList.add('is-invalid') : '';
-                            
-                            if( !inputElement.nextElementSibling ) {
-                                inputElement.parentElement.insertAdjacentHTML('beforeend', 
-                                    `<div class="invalid-feedback">${ Array.isArray(errs[keyErrorMessage]) ? errs[keyErrorMessage][0] : errs[keyErrorMessage] }</div>`);
+
+                            if (!inputElement.nextElementSibling) {
+                                inputElement.parentElement.insertAdjacentHTML('beforeend',
+                                    `<div class="invalid-feedback">${Array.isArray(errs[keyErrorMessage]) ? errs[keyErrorMessage][0] : errs[keyErrorMessage]}</div>`);
                             }
                         }
                     }
